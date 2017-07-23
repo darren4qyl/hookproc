@@ -2,4 +2,4 @@
 *.o
 hookmain
 mainproc
-
+test.*

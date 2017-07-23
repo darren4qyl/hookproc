@@ -27,6 +27,7 @@ class Utils {
    private:
     int ptrace_attach(pid_t pid);
     int ptrace_getregs(pid_t pid, struct user_regs_struct* regs);
+    int ptrace_call(pid_t pid, uint64_t addr, long* params, uint32_t num_params, struct user_regs_struct *regs);
     void print(const char* format, ...);
 };
 
@@ -90,7 +91,7 @@ void* Utils::getLibraryFuncAddr(const char* libraryPath, const char* funcName) {
 }
 
 void Utils::hookOperation(pid_t target_pid) {
-    struct user_regs_struct tt;
+    struct user_regs_struct tt,original_regs;
     print("Suspend the target process");
     if (ptrace_attach(target_pid) == -1) {
         print("ERROR");
@@ -101,6 +102,9 @@ void Utils::hookOperation(pid_t target_pid) {
         print("ERROR");
         return;
     }
+    //save original register
+    memcpy(&original_regs, &tt, sizeof(original_regs));
+
 }
 
 int Utils::ptrace_attach(pid_t pid) {
@@ -122,6 +126,23 @@ int Utils::ptrace_getregs(pid_t pid, struct user_regs_struct* regs) {
         print("ptrace_getregs:%s", strerror(errno));
         return -1;
     }
+    return 0;
+}
+
+int Utils::ptrace_call(pid_t pid, uint64_t addr, long* params, uint32_t num_params, struct user_regs_struct *regs){
+    //put the first 4 parameters into %rdi，%rsi，%rdx，%rcx
+    regs->rdi=params[0];
+    regs->rsi=params[1];
+    regs->rdx=params[2];
+    regs->rcx=params[3];
+    regs->r8=params[4];
+    regs->r9=params[5];
+
+    //set the pc to func<e.g:mmap> that will be executed
+    regs->rip=addr;
+
+
+
     return 0;
 }
 
