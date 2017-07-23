@@ -7,6 +7,7 @@
 #include <string.h>
 #include <sys/ptrace.h>
 #include <sys/types.h>
+#include <sys/user.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <iostream>
@@ -25,7 +26,7 @@ class Utils {
 
    private:
     int ptrace_attach(pid_t pid);
-    int ptrace_getregs(pid_t pid, struct pt_regs* regs);
+    int ptrace_getregs(pid_t pid, struct user_regs_struct* regs);
     void print(const char* format, ...);
 };
 
@@ -89,7 +90,7 @@ void* Utils::getLibraryFuncAddr(const char* libraryPath, const char* funcName) {
 }
 
 void Utils::hookOperation(pid_t target_pid) {
-    struct pt_regs tt;
+    struct user_regs_struct tt;
     print("Suspend the target process");
     if (ptrace_attach(target_pid) == -1) {
         print("ERROR");
@@ -116,7 +117,7 @@ int Utils::ptrace_attach(pid_t pid) {
     return 0;
 }
 
-int Utils::ptrace_getregs(pid_t pid, struct pt_regs* regs) {
+int Utils::ptrace_getregs(pid_t pid, struct user_regs_struct* regs) {
     if (ptrace(PTRACE_GETREGS, pid, NULL, regs) < 0) {
         print("ptrace_getregs:%s", strerror(errno));
         return -1;
@@ -149,7 +150,10 @@ int main(int argc, char** argv) {
         }
     }
 
-    if (target_pid < 0) return 0;
+    if (target_pid < 0) {
+        cout << "parmeters illegal " << endl;
+        return 0;
+    }
 
     Utils* utils = new Utils();
     void* mmap_addr =
