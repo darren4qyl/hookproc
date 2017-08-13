@@ -6,7 +6,7 @@
 
 C+ = g++
 CC = gcc
-CC_FLAG =
+CC_FLAG = -O0 -g
 
 HOOK_SRC_FILES := \
 	hookMian.cpp \
@@ -25,7 +25,7 @@ hookmain:
 
 .PHONY:mainproc
 mainproc:
-	$(C+) -o $@ $(MAIN_SRC_FILES)
+	$(C+) $(CC_FLAG) -o $@ $(MAIN_SRC_FILES)
 
 .PRONY:clean
 clean:

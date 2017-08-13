@@ -7,9 +7,11 @@ static char* TAG = (char*)"global tag";
 
 int main(){
     cout << "my pid:" << getpid() << endl;
+    unsigned long count = 0;
     while(1){
-       sleep(100);
-       cout << TAG << ":out input val===;" << endl;
+       sleep(1);
+       count++;
+       cout << TAG << ":out input val===" << count << endl;
     }
     return 1;
 }
